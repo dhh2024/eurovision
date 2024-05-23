@@ -13,11 +13,12 @@ import json
 df = pd.read_csv('enriched-contestants2004-2024.csv')
 # Make each contestant identifiable for other analysis pipelines and joining data to this one
 df['performance_id'] = df['year'].astype(str) + '-' + df['to_country_id']
-if 'spotify_popularity' not in df.columns:
-    spot = pd.read_csv('prelim-top80-Spotify-updated.csv', usecols=['year', 'to_country_id','spotify_popularity', 'notes'])
-    spot['performance_id'] = spot['year'].astype(str) + '-' + spot['to_country_id']
-    spot = spot.set_index('performance_id')
-    df = df.join(spot[['spotify_popularity', 'notes']], on='performance_id')
+# Drop previous values before getting new partial spotify data
+df = df.drop(columns=['spotify_popularity', 'notes'])
+spot = pd.read_csv('spotify_data.csv', usecols=['year', 'to_country_id', 'spotify_popularity', 'notes'])
+spot['performance_id'] = spot['year'].astype(str) + '-' + spot['to_country_id']
+spot = spot.set_index('performance_id')
+df = df.join(spot[['spotify_popularity', 'notes']], on='performance_id')
 
 # ** Get fractions of points for the year to normalize between years **
 # TODO: useless variable?
@@ -31,7 +32,8 @@ for year in range(2004,2025):
     current_years_contestants['fraction_of_total_points'] = current_years_contestants['points_final'] / finals_point_sum_total
     current_years_contestants['fraction_of_jury_points'] = current_years_contestants['points_jury_final'] / finals_jury_point_sum_total
     current_years_contestants['fraction_of_tele_points'] = current_years_contestants['points_tele_final'] / finals_tele_point_sum_total
-
+    # Need to do *something* with non-qualifiers - this is the easiest
+    current_years_contestants = current_years_contestants.fillna(value={'fraction_of_total_points': 0, 'fraction_of_jury_points': 0, 'fraction_of_tele_points': 0})
     # Get those who got more than 10% of all available votes that year
     outperformers += current_years_contestants[current_years_contestants['fraction_of_total_points']>=0.1].shape[0]
     for index in current_years_contestants.index.array:
@@ -42,7 +44,7 @@ for year in range(2004,2025):
 # ** Get metadata for linked performance videos **
 def scrape_video_metadata():
     # Only check for finalists
-    video_list = df[df['place_final'].notnull()]['youtube_url']
+    video_list = df[df['views'].isnull()]['youtube_url']
     for video in video_list:
         #print(video)
         # Call with --simulate and --dump_json to get only metadata, use jquery to get only the interesting columns
@@ -70,7 +72,7 @@ def scrape_video_metadata():
             print(output.stdout)
             print(output.stderr)
 
-#scrape_video_metadata()
+scrape_video_metadata()
 
 # ** Going through fractions and rank all per year 'block' according to views and votes
 # First block: only televotes (mostly)

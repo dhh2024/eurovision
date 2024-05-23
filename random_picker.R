@@ -16,4 +16,4 @@ new_draw <- non_top_non_corona[sample(nrow(non_top_non_corona), new_draw_size),]
 final_randoms <- rbind(randoms, new_draw) 
 # Check that we don't get too many non-qualifiers, they should be around 17
 nonquals <- sum(is.na(final_randoms$place_final))
-write.csv(final_randoms, file = "random40.csv", sep = ",", row.names=FALSE, fileEncoding = "UTF-8")
+write.csv(final_randoms, file = "random40.csv", sep = ",", na="", row.names=FALSE, fileEncoding = "UTF-8")
