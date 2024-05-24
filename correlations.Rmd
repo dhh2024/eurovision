@@ -1,0 +1,195 @@
+---
+title: "Eurovision correlations and scatterplots"
+author: "Jonas Berg"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+```{r}
+install.packages("plot3D")
+library("plot3D")
+```
+
+
+```{r}
+table <- read.csv(file="sorted-enriched-contestants2004-2024.csv", header=TRUE, sep=",")
+pairs(data=table, ~ point_rank + point_jury_rank + point_tele_rank + view_rank + spotify_rank)
+toplist <- read.csv(file="top40.csv", header=TRUE, sep=",")
+randomlist <- read.csv(file="random40.csv", header=TRUE, sep=",")
+#toplist <- table [!is.na(table$weighted_average_total_rank),]
+toplist_ranks <- toplist[, c("point_rank", "point_jury_rank", "point_tele_rank", "view_rank", "spotify_rank")]
+randomlist_ranks <- randomlist[, c("point_rank", "point_jury_rank", "point_tele_rank", "view_rank", "spotify_rank")]
+table_ranks <- table[, c("point_rank", "point_jury_rank", "point_tele_rank", "view_rank")]
+table_ranks <- table_ranks[!is.na(table_ranks$view_rank),]
+table_rank_labels <- table[!is.na(table$view_rank),"performance_id"]
+pairs(data=toplist, ~ point_rank + point_jury_rank + point_tele_rank + view_rank + spotify_rank)
+```
+
+```{r}
+#text3D(table_ranks[,"point_jury_rank"], table_ranks[,"point_tele_rank"], table_ranks[,"view_rank"], table_rank_labels)
+scatter3D(toplist_ranks[,"point_jury_rank"], toplist_ranks[,"point_tele_rank"], toplist_ranks[,"view_rank"])
+text3D(toplist_ranks[,"point_jury_rank"], toplist_ranks[,"point_tele_rank"], toplist_ranks[,"view_rank"], labels=toplist[, "performance_id"], add=TRUE, cex=0.5)
+```
+```{r}
+scatter3D(randomlist_ranks[,"point_jury_rank"], randomlist_ranks[,"point_tele_rank"], randomlist_ranks[,"view_rank"])
+text3D(randomlist_ranks[,"point_jury_rank"], randomlist_ranks[,"point_tele_rank"], randomlist_ranks[,"view_rank"], labels=randomlist[, "performance_id"], add=TRUE, cex=0.5)
+```
+
+```{r}
+toplist <- toplist[1:20,]
+toplist_ranks <- toplist_ranks[1:20,]
+scatter3D(toplist_ranks[,"point_jury_rank"], toplist_ranks[,"point_tele_rank"], toplist_ranks[,"view_rank"])
+text3D(toplist_ranks[,"point_jury_rank"], toplist_ranks[,"point_tele_rank"], toplist_ranks[,"view_rank"], labels=toplist[, "performance_id"], add=TRUE, cex=0.5)
+```
+
+
+
+```{r}
+#cor 0.44
+cor.test( ~ point_rank + point_jury_rank,
+         data=toplist,
+         method = "pearson")
+#cor 0.71
+cor.test( ~ point_rank + point_tele_rank,
+         data=toplist,
+         method = "pearson")
+#cor 0.17 not sign 0.27
+cor.test( ~ point_rank + view_rank,
+         data=toplist,
+         method = "pearson")
+#cor 0.22 not sign 0.16
+cor.test( ~ point_rank + spotify_rank,
+         data=toplist,
+         method = "pearson")
+# jury and tele not significant? p 0.98
+cor.test( ~ point_jury_rank + point_tele_rank,
+         data=toplist,
+         method = "pearson")
+# jury and view not significant? p 0.35
+cor.test( ~ point_jury_rank + view_rank,
+         data=toplist,
+         method = "pearson")
+# jury and spotify not significant? p 0.08585
+cor.test( ~ point_jury_rank + spotify_rank,
+         data=toplist,
+         method = "pearson")
+# tele and view not sign? p 0.1312
+cor.test( ~ point_tele_rank + view_rank,
+         data=toplist,
+         method = "pearson")
+#cor 0.30 not sign .85
+cor.test( ~ point_tele_rank + spotify_rank,
+         data=toplist,
+         method = "pearson")
+#cor 0.35 not sign
+cor.test( ~ view_rank + spotify_rank,
+         data=toplist,
+         method = "pearson")
+```
+```{r}
+#cor 0.96
+cor.test( ~ point_rank + point_jury_rank,
+         data=table,
+         method = "pearson")
+#cor 0.96
+cor.test( ~ point_rank + point_tele_rank,
+         data=table,
+         method = "pearson")
+#cor 0.62
+cor.test( ~ point_rank + view_rank,
+         data=table,
+         method = "pearson")
+#cor 0.68
+cor.test( ~ point_rank + spotify_rank,
+         data=table,
+         method = "pearson")
+#cor 0.87
+cor.test( ~ point_jury_rank + point_tele_rank,
+         data=table,
+         method = "pearson")
+#cor 0.51
+cor.test( ~ point_jury_rank + view_rank,
+         data=table,
+         method = "pearson")
+# not sign? p 0.085
+cor.test( ~ point_jury_rank + spotify_rank,
+         data=table,
+         method = "pearson")
+#cor 0.58
+cor.test( ~ point_tele_rank + view_rank,
+         data=table,
+         method = "pearson")
+#cor 0.30
+cor.test( ~ point_tele_rank + spotify_rank,
+         data=table,
+         method = "pearson")
+#cor 0.35
+cor.test( ~ view_rank + spotify_rank,
+         data=table,
+         method = "pearson")
+```
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+```{r}
+weighted_toplist <- c('2009-no','2004-ua','2006-fi','2012-se','2004-cs','2015-se','2015-it','2004-gr','2007-rs','2014-at','2007-ua','2008-ru','2006-ru','2023-se','2017-pt','2013-dk','2005-gr','2006-ba','2021-it','2015-ru','2024-ch','2004-tr','2010-de','2021-fr','2024-hr','2019-nl','2022-ua','2008-ua','2018-il','2023-fi','2014-se','2008-gr','2015-be','2007-ru','2019-it','2008-am','2017-bg','2016-ua','2022-es','2024-fr')
+weightless_toplist <- c('2009-no','2004-ua','2006-fi','2012-se','2015-se','2004-cs','2015-it','2007-rs','2004-gr','2007-ua','2014-at','2023-se','2008-ru','2021-it','2005-gr','2006-ru','2006-ba','2010-de','2024-ch','2019-nl','2013-dk','2004-tr','2021-fr','2017-pt','2015-ru','2022-ua','2024-hr','2018-il','2023-fi','2008-ua','2015-be','2019-it','2014-se','2008-am','2022-es','2007-ru','2008-gr','2016-ua','2024-fr','2018-cy')
+print('In weighted but not in unweighted')
+setdiff(weighted_toplist, weightless_toplist)
+print('In unweighted, not in weighted')
+setdiff(weightless_toplist,weighted_toplist)
+print('In weighted 10 but not in unweighted')
+setdiff(weighted_toplist[1:10], weightless_toplist[1:10])
+print('In unweighted 10, not in weighted')
+setdiff(weightless_toplist[1:10],weighted_toplist[1:10])
+```
+
+```{r}
+
+#cor 0.97
+cor.test( ~ point_rank + point_jury_rank,
+         data=randomlist,
+         method = "pearson")
+#cor 0.97
+cor.test( ~ point_rank + point_tele_rank,
+         data=randomlist,
+         method = "pearson")
+#cor 0.65
+cor.test( ~ point_rank + view_rank,
+         data=randomlist,
+         method = "pearson")
+#cor 0.54
+cor.test( ~ point_rank + spotify_rank,
+         data=randomlist,
+         method = "pearson")
+#cor .91
+cor.test( ~ point_jury_rank + point_tele_rank,
+         data=randomlist,
+         method = "pearson")
+# cor .57
+cor.test( ~ point_jury_rank + view_rank,
+         data=randomlist,
+         method = "pearson")
+# coe .49
+cor.test( ~ point_jury_rank + spotify_rank,
+         data=randomlist,
+         method = "pearson")
+#cor .66
+cor.test( ~ point_tele_rank + view_rank,
+         data=randomlist,
+         method = "pearson")
+#cor .55
+cor.test( ~ point_tele_rank + spotify_rank,
+         data=randomlist,
+         method = "pearson")
+#cor 0.58
+cor.test( ~ view_rank + spotify_rank,
+         data=randomlist,
+         method = "pearson")
+```
+
